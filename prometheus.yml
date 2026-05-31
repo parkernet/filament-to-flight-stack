@@ -1,0 +1,14 @@
+# Global Prometheus configuration settings.
+global:
+  # How frequently to scrape targets by default.
+  scrape_interval: 15s
+
+# A list of scrape configurations.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'bambu-exporter'
+    # This is a static list of targets to scrape.
+    static_configs:
+      # The target is the bambu-exporter service, which exposes metrics on port 9723.
+      # Prometheus will connect to 'http://bambu-exporter:9723/metrics'.
+      - targets: ['bambu-exporter:9723']

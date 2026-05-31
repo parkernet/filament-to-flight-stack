@@ -1,0 +1,2 @@
+paho-mqtt # MQTT client library to connect to the Bambu printer.
+requests  # HTTP client library to make API calls to InvenTree.

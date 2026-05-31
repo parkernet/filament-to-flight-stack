@@ -1,25 +1,39 @@
+# This Docker Compose file orchestrates the services for the Maker-Stack.
+# It is divided into two main sections:
+# 1. File Sync & Remote Slicing: Core services for managing files and slicer profiles.
+# 2. Telemetry, Inventory, and Automation: Services for monitoring the 3D printer and automating inventory.
+
 services:
+  # --- File Sync & Remote Slicing ---
+
   orcaslicer:
     image: lscr.io/linuxserver/orcaslicer:latest
     container_name: orcaslicer
+    # OrcaSlicer running in a container, accessible via a web browser.
     environment:
       - PUID=${ORCASLICER_PUID}
-      - PGID=${ORCASLICER_PGID}}
-      - TZ=Etc/UTC
+      - PGID=${ORCASLICER_PGID}
+      - TZ=${TZ}
       - GTK_THEME=Adwaita:dark
+      # GPU passthrough for hardware acceleration in the UI. Requires NVIDIA Container Toolkit.
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
+      # Stores OrcaSlicer's configuration, including user profiles, filaments, and printer settings.
       - ./data/orcaslicer-data:/config
+      # Makes 3D model files available inside the OrcaSlicer container.
       - ./data/3d-files:/projects
     ports:
+      # 3000: Web UI for the OrcaSlicer container.
       - 3000:3000
-      - 3001:3001
+      # 3001: Optional port for OrcaSlicer's internal web server, if needed for specific features.
+      - 3001:3001 # For OrcaSlicer's internal web server, if needed
     shm_size: "1gb"
     deploy:
       resources:
         reservations:
           devices:
+            # Reserves a single NVIDIA GPU for the container.
             - driver: nvidia
               count: 1
               capabilities: [gpu]
@@ -28,15 +42,20 @@ services:
   syncthing:
     image: lscr.io/linuxserver/syncthing:latest
     container_name: syncthing
+    # File synchronization service to keep slicer profiles and models consistent across devices.
     environment:
       - PUID=${SYNCTHING_PUID}
       - PGID=${SYNCTHING_PGID}
-      - TZ=Etc/UTC
+      - TZ=${TZ}
     volumes:
-      # Stores Syncthing's internal settings
+      # Stores Syncthing's own configuration data.
       - ./data/syncthing-data:/config
+      # This volume is shared with the OrcaSlicer container's user profile directory.
+      # Syncthing uses this path to sync profiles to/from your other machines.
       # Maps directly to your Orca Slicer profiles for syncing
       - ./data/orcaslicer-data/user:/orca-sync
+      # This volume is shared with the OrcaSlicer container's projects directory.
+      # Syncthing uses this path to sync your 3D models.
       # Maps directly to your 3D models for syncing
       - ./data/3d-files:/projects-sync
     ports:
@@ -45,3 +64,113 @@ services:
       - 22000:22000/udp # File transfers
       - 21027:21027/udp # Local discovery
     restart: unless-stopped
+
+# --- Telemetry, Inventory, and Automation ---
+
+  # This service connects to the Bambu Lab printer's MQTT stream and exposes its data
+  # as Prometheus-compatible metrics.
+  bambu-exporter:
+    build: ./bambu-exporter
+    container_name: bambu-exporter
+    environment:
+      # These variables tell the exporter how to connect to your printer.
+      - BBL_HOST=${BAMBU_PRINTER_IP}
+      - BBL_ACCESS_CODE=${BAMBU_ACCESS_CODE}
+      - BBL_SERIAL=${BAMBU_SERIAL_NUMBER}
+    ports:
+      # Exposes the /metrics endpoint for Prometheus to scrape.
+      - "9723:9723" # Prometheus metrics endpoint
+    restart: unless-stopped
+
+  # A time-series database that scrapes and stores metrics from the bambu-exporter.
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      # Mounts the Prometheus configuration file.
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      # Persistent storage for the time-series data.
+      - ./data/prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      # Web UI for Prometheus.
+      - 9090:9090
+    restart: unless-stopped
+
+  # A data visualization tool for creating dashboards to monitor the printer's status.
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    environment:
+      # Sets the initial admin credentials for Grafana.
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      # Persistent storage for Grafana dashboards, data sources, and settings.
+      - ./data/grafana-data:/var/lib/grafana
+    ports:
+      # Web UI for Grafana. Port 3002 is used to avoid conflict with OrcaSlicer on port 3000.
+      - 3002:3000 # Grafana UI. Mapped to 3002 to avoid conflict with OrcaSlicer.
+    restart: unless-stopped
+
+  # A PostgreSQL database to store InvenTree's data.
+  inventree-db:
+    image: postgres:15
+    container_name: inventree-db
+    environment:
+      # Credentials for the InvenTree database.
+      - POSTGRES_DB=${INVENTREE_DB_NAME}
+      - POSTGRES_USER=${INVENTREE_DB_USER}
+      - POSTGRES_PASSWORD=${INVENTREE_DB_PASSWORD}
+    volumes:
+      # Persistent storage for the database.
+      - ./data/inventree-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # An open-source inventory management system for tracking filament spools and other parts.
+  inventree:
+    image: inventree/inventree:stable
+    container_name: inventree
+    depends_on:
+      - inventree-db
+    environment:
+      # Configuration for connecting InvenTree to its PostgreSQL database.
+      - INVENTREE_DB_ENGINE=postgresql
+      - INVENTREE_DB_NAME=${INVENTREE_DB_NAME}
+      - INVENTREE_DB_USER=${INVENTREE_DB_USER}
+      - INVENTREE_DB_PASSWORD=${INVENTREE_DB_PASSWORD}
+      - INVENTREE_DB_HOST=inventree-db
+      - INVENTREE_DB_PORT=5432
+      - INVENTREE_SITE_URL=${INVENTREE_SITE_URL}
+      - INVENTREE_CSRF_TRUSTED_ORIGINS=${INVENTREE_CSRF_TRUSTED_ORIGINS}
+      - INVENTREE_DB_UPGRADE=true
+    volumes:
+      # Persistent storage for InvenTree media files and plugins.
+      - ./data/inventree-data:/home/inventree/data
+    ports:
+      # Web UI for InvenTree.
+      - 8000:8000
+    restart: unless-stopped
+
+  # The custom automation script that connects the printer's MQTT events to the InvenTree API.
+  # bridge-script:
+  #   build: ./bridge-script
+  #   container_name: bridge-script
+  #   depends_on:
+  #     - inventree
+  #   environment:
+  #     # Credentials for connecting to the printer's MQTT broker.
+  #     - MQTT_HOST=${BAMBU_PRINTER_IP}
+  #     - MQTT_PORT=${MQTT_PORT}
+  #     - MQTT_USER=${MQTT_USER}
+  #     - MQTT_PASS=${BAMBU_ACCESS_CODE}
+  #     - MQTT_SERIAL=${BAMBU_SERIAL_NUMBER}
+  #     # Credentials for connecting to the InvenTree API.
+  #     - INVENTREE_URL=http://inventree:8000
+  #     - INVENTREE_API_USER=${INVENTREE_ADMIN_USER}
+  #     - INVENTREE_API_PASSWORD=${INVENTREE_ADMIN_PASSWORD}
+  #   restart: unless-stopped
