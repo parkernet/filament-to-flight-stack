@@ -1,0 +1,47 @@
+services:
+  orcaslicer:
+    image: lscr.io/linuxserver/orcaslicer:latest
+    container_name: orcaslicer
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - GTK_THEME=Adwaita:dark
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    volumes:
+      - ./data/orcaslicer-data:/config
+      - ./data/3d-files:/projects
+    ports:
+      - 3000:3000
+      - 3001:3001
+    shm_size: "1gb"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    container_name: syncthing
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      # Stores Syncthing's internal settings
+      - ./data/syncthing-data:/config
+      # Maps directly to your Orca Slicer profiles for syncing
+      - ./data/orcaslicer-data/user:/orca-sync
+      # Maps directly to your 3D models for syncing
+      - ./data/3d-files:/projects-sync
+    ports:
+      - 8384:8384 # Web UI
+      - 22000:22000/tcp # File transfers
+      - 22000:22000/udp # File transfers
+      - 21027:21027/udp # Local discovery
+    restart: unless-stopped
