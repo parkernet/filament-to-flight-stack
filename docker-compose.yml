@@ -3,8 +3,8 @@ services:
     image: lscr.io/linuxserver/orcaslicer:latest
     container_name: orcaslicer
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${ORCASLICER_PUID}
+      - PGID=${ORCASLICER_PGID}}
       - TZ=Etc/UTC
       - GTK_THEME=Adwaita:dark
       - NVIDIA_VISIBLE_DEVICES=all
@@ -29,8 +29,8 @@ services:
     image: lscr.io/linuxserver/syncthing:latest
     container_name: syncthing
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${SYNCTHING_PUID}
+      - PGID=${SYNCTHING_PGID}
       - TZ=Etc/UTC
     volumes:
       # Stores Syncthing's internal settings
