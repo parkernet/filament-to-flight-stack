@@ -49,20 +49,22 @@ The workflow is designed to be simple and automated:
 
 1.  Clone the repository.
 2.  Ensure Docker and `docker-compose` are installed on the server.
-3.  If you have an NVIDIA GPU, ensure the NVIDIA Container Toolkit is installed for GPU passthrough.
-4.  Run `docker-compose up -d` to start the services.
-5.  **Initial Syncthing Setup:**
+3.  Create a `.env` file by copying the example template: `cp .env.example .env`.
+4.  Edit the `.env` file and set your desired passwords, tokens, and user/group IDs (`PUID`/`PGID`).
+5.  If you have an NVIDIA GPU, ensure the NVIDIA Container Toolkit is installed for GPU passthrough.
+6.  Run `docker-compose up -d` to start the services.
+7.  **Initial Syncthing Setup:**
     - Access the Syncthing UI at `http://<server-ip>:8384`.
     - Add your desired PC as a remote device.
     - On the desired PC, share your OrcaSlicer user profile directory (e.g., `C:\Users\<YourUser>\AppData\Roaming\OrcaSlicer\user`) and your 3D models directory with the server.
     - On the server's Syncthing UI, accept the incoming shares and point them to the `/orca-sync` and `/projects-sync` folders respectively.
-6.  **OrcaSlicer Access:**
+8.  **OrcaSlicer Access:**
     - Access the OrcaSlicer UI at `http://<server-ip>:3000`.
     - Your profiles and models should appear automatically once Syncthing completes its initial sync.
 
 ## Future Plans
 
-The vision for Parker-Hub is to evolve from a 3D printing utility into a full-stack **Autonomy R&D and Manufacturing Hub**. The goal is to create an industrial-grade engineering environment for personal projects, such as the development of a 2-meter VTOL tailsitter.
+The vision for Parker-Hub is to evolve from a 3D printing utility into a full-stack **Autonomy R&D and Manufacturing Hub**. The goal is to create a comprehensive engineering environment for personal projects, such as the development of my 2-meter wingspan VTOL tailsitter running Ardupilot.
 
 Planned service integrations are categorized as follows:
 

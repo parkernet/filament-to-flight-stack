@@ -1,1 +1,8 @@
+# Personal Data
 data/
+
+# Environment variables - DO NOT COMMIT
+.env
+
+# Syncthing secrets
+/data/syncthing/secret.*
