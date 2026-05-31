@@ -1,10 +1,10 @@
-# Maker-Stack
+# Filament-to-Flight Stack (F2 Stack)
 
-Welcome to Maker-Stack, my personal central hub for managing digital fabrication, from 3D printing workflows to automated inventory and future autonomy R&D. This project leverages Docker to create a seamless, integrated environment accessible from anywhere on my personal Tailnet.
+Welcome to the Filament-to-Flight Stack (F2 Stack), my personal central hub for managing digital fabrication, from 3D printing workflows to automated inventory and future autonomy R&D. This project leverages Docker to create a seamless, integrated environment accessible from anywhere on my personal Tailnet.
 
 ## Overview
 
-The core idea behind Maker-Stack is to create a cohesive, server-based ecosystem for my personal engineering projects. It solves the challenge of synchronizing files across computers, monitoring machines in real-time, and automating tedious tasks like inventory management.
+The core idea behind the F2 Stack is to create a cohesive, server-based ecosystem for my personal engineering projects. It solves the challenge of synchronizing files across computers, monitoring machines in real-time, and automating tedious tasks like inventory management.
 
 ## System Architecture
 
@@ -94,7 +94,7 @@ The workflow is designed to be simple and automated:
 
 ## Future Plans
 
-The vision for Maker-Stack is to evolve from a 3D printing utility into a full-stack **Autonomy R&D and Manufacturing Hub**. The goal is to create a comprehensive engineering environment for personal projects, such as the development of my 2-meter wingspan VTOL tailsitter running Ardupilot.
+The vision for the F2 Stack is to evolve from a 3D printing utility into a full-stack **Autonomy R&D and Manufacturing Hub**. The goal is to create a comprehensive engineering environment for personal projects, such as the development of my 2-meter wingspan VTOL tailsitter running Ardupilot.
 
 Planned service integrations are categorized as follows:
 

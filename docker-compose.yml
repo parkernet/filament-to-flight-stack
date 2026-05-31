@@ -1,4 +1,4 @@
-# This Docker Compose file orchestrates the services for the Maker-Stack.
+# This Docker Compose file orchestrates the services for the Filament-to-Flight Stack.
 # It is divided into two main sections:
 # 1. File Sync & Remote Slicing: Core services for managing files and slicer profiles.
 # 2. Telemetry, Inventory, and Automation: Services for monitoring the 3D printer and automating inventory.

@@ -1,5 +1,5 @@
 """
-Maker-Stack Bridge Script
+F2 Stack Bridge Script
 
 This script acts as the "glue" between a Bambu Lab 3D printer and the InvenTree
 inventory management system. It connects to the printer's MQTT broker to receive
@@ -88,7 +88,7 @@ if not all([MQTT_HOST, MQTT_PASS, MQTT_SERIAL, INVENTREE_URL]):
     exit(1)
 
 # Create a new MQTT client instance. The client_id should be unique.
-client = mqtt.Client(client_id="maker-stack-bridge")
+client = mqtt.Client(client_id="f2-stack-bridge")
 
 # Assign the callback functions.
 client.on_connect = on_connect
