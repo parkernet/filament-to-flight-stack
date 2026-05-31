@@ -1,6 +1,6 @@
 # Filament-to-Flight Stack (F2 Stack)
 
-Welcome to the Filament-to-Flight Stack (F2 Stack), my personal central hub for managing digital fabrication, from 3D printing workflows to automated inventory and future autonomy R&D. This project leverages Docker to create a seamless, integrated environment accessible from anywhere on my personal Tailnet.
+Welcome to the Filament-to-Flight Stack (F2 Stack), my central hub for managing digital fabrication, from 3D printing workflows to automated inventory and future autonomy R&D. This project leverages Docker to create a seamless, integrated environment accessible from anywhere on my personal Tailnet.
 
 ## Overview
 
