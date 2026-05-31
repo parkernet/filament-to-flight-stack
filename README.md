@@ -23,6 +23,7 @@ The `linuxserver/orcaslicer` image provides a full-featured OrcaSlicer instance 
 
 - **Web UI:** Accessible at `http://<server-ip>:3000`.
 - **Configuration Volume:** The `./data/orcaslicer-data` directory is mapped to `/config` inside the container. This is where all slicer settings, profiles, and user data are stored.
+    - To find your orcaslicer data (if on Windows), it's typically stored in `C:\Users\<YourUser>\AppData\Roaming\OrcaSlicer`
 - **Projects Volume:** The `./data/3d-files` directory is mapped to `/projects`, making all my 3D models available directly within the OrcaSlicer interface.
 
 ### 2. Syncthing
